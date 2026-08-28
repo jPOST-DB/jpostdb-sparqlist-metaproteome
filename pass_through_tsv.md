@@ -3,12 +3,13 @@
 ## Parameters
 
 * `sample`
-  * default: JPST000476_1
+  * default:
+  * example: JPST000476_1
   
 ## `return`
 ```javascript
 async ({sample})=>{
-  const id = sample.match(/_(\d+)$/)[1];
-  return await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/JPST000476/" + id + "/open_search/functional_annotation/functions.tsv").then(r => r.text());
+  const tmp = sample.match(/(.+)_(\d+)$/);
+  return await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + tmp[1] + "/" + tmp[2] + "/Annotated_proteins.tsv").then(r => r.text());
 }
 ```

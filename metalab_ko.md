@@ -3,13 +3,15 @@
 ## Parameters
 
 * `sample`
-  * default: JPST000476_1
+  * default:
+  * example: JPST000476_1
 
 ## `return`
 ```javascript
 async ({sample}) => {
   sample = sample.replace("_", "/");
-  const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + sample + "/open_search/functional_annotation/functions.tsv").then(r => r.text());
+  let tsv = sample + "/Annotated_proteins.tsv";
+  const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + tsv).then(r => r.text());
   const list = data.split(/\n/);
   let intensity = {};
   let col = 24; // KO

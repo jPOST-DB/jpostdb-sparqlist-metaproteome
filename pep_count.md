@@ -9,7 +9,9 @@
 ```javascript
 async ({sample})=>{
   sample = sample.replace("_", "/");
-  const api = "https://tools.jpostdb.org/subdb/metaproteome/data/" + sample + "/open_search/final_summary.tsv";
+  let tsv = sample + "/final_summary.tsv";
+  const api = "https://tools.jpostdb.org/subdb/metaproteome/data/" + tsv;
+  console.log(api);
   const text = await fetch(api).then(r => r.text());
   const list = text.split(/\n/);
   for (let line of list) {

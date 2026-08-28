@@ -3,7 +3,8 @@
 ## Parameters
 
 * `project` (Opt.) (Req. project or sample)
-  * default: JPST000476
+  * default:
+  * example: JPST000476
 * `sample` (Opt.)
   * default: 
   * example: JPST000476_1
@@ -17,10 +18,11 @@ async ({project, sample, group, stanza}) => {
   if (! project) project = sample.match(/^(JPST\d+)/)[1];
   const project_meta = await fetch("project?project=" + project).then(r => r.json());
   const metadata = "https://tools.jpostdb.org/subdb/metaproteome/data/" + project + "/metadata.json";
+  //console.log(metadata);
   let json = await fetch(metadata).then(r => r.json());
   if (sample) {
     for (let i = 0; i < json.length; i++) {
-      console.log(json[i].sample_name);
+      //console.log(json[i].sample_name);
       if (json[i].sample_name == sample) {
         const count = await fetch("pep_count?sample=" + sample).then(r => r.json());
         json[i].sample_type = project_meta.sample_type;

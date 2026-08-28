@@ -6,18 +6,20 @@
 ## Parameters
 
 * `project`
-  * default: JPST000476
+  * default:
+  * example: JPST000476
 * `sample`
   * default:
 * `group`
-  * default: Control
+  * default:
+  * example: Control
 * `go`
-  * default: 0008150
-  * example: 0003674, 0005575
+  * default:
+  * example: 0008150, 0003674, 0005575
 
 ## Endpoint
 
-https://tools.jpostdb.org/proxy/sparql
+https://tools.jpostdb.org/sparql
 
 ## `go_list`
 ```sparql
@@ -46,20 +48,32 @@ async ({project, sample, group, go_list}) => {
     go[id] = d.label.value;
     color[id] = await fetch("str2color?str=" + alpha[i]).then(r => r.text());
   }
+  if (! project) project = sample.match(/^(JPST\d+)/)[1];
   let info = [];
   if (sample) info = await fetch("dataset?sample=" + sample).then(r => r.json());
   else info = await fetch("dataset?project=" + project + "&group=" + group).then(r => r.json());
-  const col = 17; // GO
+  let col = 17; // GO default
   let res = [];
   for (let i = 0; i < info.length; i++) {
     const sample = info[i].sample_name;
-    const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + project + "/" + info[i].sample_id + "/open_search/functional_annotation/functions.tsv").then(r => r.text());
+    let tsv = project + "/" + info[i].sample_id + "/Annotated_proteins.tsv";
+    const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + tsv).then(r => r.text());
     const list = data.split(/\n/);
     let intensity = {};
     intensity["unclassified"] = 0;
     let total = 0;
     for (const line of list) {
-      if (line.match(/^Group_ID/)) continue;
+      if (line.match(/^Group_ID/)) {
+        const items = line.split(/\t/);
+        for (let i = 0; i < items.length; i++) {
+          if (items[i] == "Gene_Ontology_id") {
+            col = i;
+            break;
+          }
+        }   
+        continue;
+      }
+      //if (line.match(/^Group_ID/)) continue;
       const d = line.split(/\t/);
       if (!d[6] || !d[6].match(/^[\d\.]+$/)) continue;
       let chk2 = false;

@@ -6,35 +6,52 @@
 ## Parameters
 
 * `project`
-  * default: JPST000476
+  * default:
+  * example: JPST000476
 * `sample`
   * default:
 * `group`
-  * default: Control
+  * default:
+  * example: Control
 * `category`
-  * default: NOG
-  * example: COG, EC
+  * default:
+  * example: COG, NOG, EC
 
 ## `return`
 ```javascript
 async ({project, sample, group, category}) => {
+  if (! project) project = sample.match(/^(JPST\d+)/)[1];
   let info = [];
   if (sample) info = await fetch("dataset?sample=" + sample).then(r => r.json());
   else info = await fetch("dataset?project=" + project + "&group=" + group).then(r => r.json());
   const function_label = await fetch("function_label?category=" + category).then(r => r.json());
-  let col = 39; // NOG
-  if (category == "COG") col = 36;
-  else if (category == "EC") col = 20;
+  let col = 0;
   let res = [];
   for (let i = 0; i < info.length; i++) {
     const sample = info[i].sample_name;
-    const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + project + "/" + info[i].sample_id + "/open_search/functional_annotation/functions.tsv").then(r => r.text());
+    let tsv = project + "/" + info[i].sample_id + "/Annotated_proteins.tsv";
+    const data = await fetch("https://tools.jpostdb.org/subdb/metaproteome/data/" + tsv).then(r => r.text());
     const list = data.split(/\n/);
     let intensity = {};
     intensity["unclassified"] = 0;
     let total = 0;
     for (const line of list) {
-      if (line.match(/^Group_ID/)) continue;
+      if (line.match(/^Group_ID/)) {
+        const items = line.split(/\t/);
+        for (let i = 0; i < items.length; i++) {
+          if (items[i] == "NOG category" && category == "NOG") {
+            col = i;
+            break;
+          } else if (items[i] == "COG category" && category == "COG") {
+            col = i;
+            break;
+          } else if (items[i] == "EC_id" && category == "EC") {
+            col = i;
+            break;
+          } 
+        } 
+        continue;
+      }
       const d = line.split(/\t/);
       if (!d[6] || !d[6].match(/^[\d\.]+$/)) continue;
       if (! d[col]) {
