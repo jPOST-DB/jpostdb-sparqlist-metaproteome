@@ -56,14 +56,17 @@ async ({project, sample, group}) => {
       if (!tax[rank_col] || (tax[rank_col] && tax[rank_col].toLowerCase() != "phylum")) continue;
       let intensity = parseFloat(tax[intensity_col]);
       total += intensity;
-      let color = "#dddddd";
-      if (tax[name_col]) {
-        color = p2color[tax[name_col]] ? p2color[tax[phylum_col]] : "#dddddd";
-      }
+      // rank == "phylum" の行なので門名は name_col。
+      // (旧実装は name_col で存在判定して phylum_col を引いており、列がずれると色が落ちる)
+      const phylum = tax[name_col];
+      const color = (phylum && p2color[phylum]) ? p2color[phylum] : "#dddddd";
+      // p__ は GTDB の門未割当プレースホルダ。ツールチップ/凡例用に読める名前を付ける
+      const label = (phylum == "p__") ? "Unassigned" : phylum;
       r.push(
         {
           sample: sample,
-          category: tax[name_col],
+          category: phylum,
+          label: label,
           color: color,
           intensity: intensity
         }
